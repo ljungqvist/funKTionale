@@ -1,5 +1,6 @@
 /*
- * Copyright 2013 - 2016 Mario Arias
+ * Original work Copyright 2013 - 2016 Mario Arias
+ * Modified work Copyright 2017 Petter Ljungqvist [Houston Inc.]
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +18,6 @@
 package org.funktionale.either
 
 import org.funktionale.collections.prependTo
-import org.funktionale.option.Option
 import org.funktionale.utils.hashCodeForNullable
 import java.util.*
 
@@ -63,13 +63,9 @@ sealed class Disjunction<out L, out R> : EitherLike {
     }
 
 
-    fun filter(predicate: (R) -> Boolean): Option<Disjunction<L, R>> = when (this) {
-        is Right -> if (predicate(value)) {
-            Option.Some(this)
-        } else {
-            Option.None
-        }
-        is Left -> Option.None
+    fun filter(predicate: (R) -> Boolean): Disjunction<L, R>? = when (this) {
+        is Right -> this.takeIf { predicate(value) }
+        is Left -> null
     }
 
     fun toList(): List<R> = when (this) {
@@ -77,9 +73,9 @@ sealed class Disjunction<out L, out R> : EitherLike {
         is Left -> listOf()
     }
 
-    fun toOption(): Option<R> = when (this) {
-        is Right -> Option.Some(value)
-        is Left -> Option.None
+    fun getOrNull(): R? = when (this) {
+        is Right -> value
+        is Left -> null
     }
 
     fun toEither(): Either<L, R> = when (this) {
@@ -154,6 +150,6 @@ fun <T, L, R> List<T>.disjuntionTraverse(f: (T) -> Disjunction<L, R>): Disjuncti
 
 fun <L, R> List<Disjunction<L, R>>.disjunctionSequential(): Disjunction<L, List<R>> = disjuntionTraverse { it }
 
-inline fun <X, T> Option<T>.toDisjunctionRight(left: () -> X): Disjunction<X, T> = toEitherRight(left).toDisjunction()
+inline fun <X, T> T?.toDisjunctionRight(left: () -> X): Disjunction<X, T> = toEitherRight(left).toDisjunction()
 
-inline fun <X, T> Option<T>.toDisjunctionLeft(right: () -> X): Disjunction<T, X> = toEitherLeft(right).toDisjunction()
+inline fun <X, T> T?.toDisjunctionLeft(right: () -> X): Disjunction<T, X> = toEitherLeft(right).toDisjunction()

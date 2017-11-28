@@ -1,5 +1,6 @@
 /*
- * Copyright 2013 - 2016 Mario Arias
+ * Original work Copyright 2013 - 2016 Mario Arias
+ * Modified work Copyright 2017 Petter Ljungqvist [Houston Inc.]
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +19,6 @@ package org.funktionale.either
 
 import org.funktionale.either.Either.Left
 import org.funktionale.either.Either.Right
-import org.funktionale.option.Option
-import org.funktionale.option.Option.None
-import org.funktionale.option.Option.Some
 import java.util.*
 
 class LeftProjection<out L, out R>(val e: Either<L, R>) {
@@ -45,15 +43,9 @@ class LeftProjection<out L, out R>(val e: Either<L, R>) {
 
     fun <X> map(f: (L) -> X): Either<X, R> = flatMap { Left<X, R>(f(it)) }
 
-    fun filter(predicate: (L) -> Boolean): Option<Either<L, R>> = when (e) {
-        is Left -> {
-            if (predicate(e.l)) {
-                Some(e)
-            } else {
-                None
-            }
-        }
-        is Right -> None
+    fun filter(predicate: (L) -> Boolean): Either<L, R>? = when (e) {
+        is Left -> e.takeIf { predicate(e.l) }
+        is Right -> null
     }
 
     fun toList(): List<L> = when (e) {
@@ -61,9 +53,9 @@ class LeftProjection<out L, out R>(val e: Either<L, R>) {
         is Right -> listOf()
     }
 
-    fun toOption(): Option<L> = when (e) {
-        is Left -> Some(e.l)
-        is Right -> None
+    fun getOrNull(): L? = when (e) {
+        is Left -> e.l
+        is Right -> null
     }
 
 }

@@ -1,5 +1,6 @@
 /*
- * Copyright 2013 - 2016 Mario Arias
+ * Original work Copyright 2013 - 2016 Mario Arias
+ * Modified work Copyright 2017 Petter Ljungqvist [Houston Inc.]
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +19,6 @@ package org.funktionale.either
 
 import org.funktionale.either.Either.Left
 import org.funktionale.either.Either.Right
-import org.funktionale.option.Option
-import org.funktionale.option.Option.None
-import org.funktionale.option.toOption
 import org.testng.Assert.*
 import org.testng.annotations.Test
 
@@ -89,10 +87,10 @@ class EitherTest {
     }
 
     @Test fun filter() {
-        assertEquals(left.left().filter { it == 5 }.get().left().get(), 5)
-        assertEquals(left.left().filter { it == 6 }, None)
-        assertEquals(right.right().filter { it.startsWith('k') }.get().right().get(), "kotlin")
-        assertEquals(right.right().filter { it.startsWith('j') }, None)
+        assertEquals(left.left().filter { it == 5 }?.left()?.get(), 5)
+        assertNull(left.left().filter { it == 6 })
+        assertEquals(right.right().filter { it.startsWith('k') }?.right()?.get(), "kotlin")
+        assertNull(right.right().filter { it.startsWith('j') })
     }
 
     @Test fun toList() {
@@ -101,8 +99,8 @@ class EitherTest {
     }
 
     @Test fun toOption() {
-        assertEquals(left.left().toOption().get(), 5)
-        assertEquals(left.right().toOption(), None)
+        assertEquals(left.left().getOrNull(), 5)
+        assertNull(left.right().getOrNull())
     }
 
     @Test fun fold() {
@@ -145,8 +143,8 @@ class EitherTest {
         assertTrue(parseInts(listOf("1", "foo", "3")) is Left)
     }
 
-    val some: Option<String> = "kotlin".toOption()
-    val none: Option<String> = null.toOption()
+    val some: String? = "kotlin"
+    val none: String? = null
 
     @Test fun toRight() {
         assertTrue(some.toEitherRight { 0 }.isRight())

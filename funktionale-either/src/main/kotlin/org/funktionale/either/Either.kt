@@ -1,5 +1,6 @@
 /*
- * Copyright 2013 - 2016 Mario Arias
+ * Original work Copyright 2013 - 2016 Mario Arias
+ * Modified work Copyright 2017 Petter Ljungqvist [Houston Inc.]
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +20,6 @@ package org.funktionale.either
 import org.funktionale.collections.prependTo
 import org.funktionale.either.Either.Left
 import org.funktionale.either.Either.Right
-import org.funktionale.option.Option
 import org.funktionale.utils.hashCodeForNullable
 
 sealed class Either<out L, out R> : EitherLike {
@@ -91,7 +91,7 @@ fun <L, R> Pair<L, R>.toRight(): Right<L, R> = Right(this.component2())
 
 fun <T> eitherTry(body: () -> T): Either<Throwable, T> = try {
     Right(body())
-} catch(t: Throwable) {
+} catch (t: Throwable) {
     Left(t)
 }
 
@@ -107,14 +107,10 @@ fun <T, L, R> List<T>.eitherTraverse(f: (T) -> Either<L, R>): Either<L, List<R>>
 
 fun <L, R> List<Either<L, R>>.eitherSequential(): Either<L, List<R>> = eitherTraverse { it: Either<L, R> -> it }
 
-inline fun <X, T> Option<T>.toEitherRight(left: () -> X): Either<X, T> = if (isEmpty()) {
-    Left(left())
-} else {
-    Right(get())
-}
+inline fun <X, T> T?.toEitherRight(left: () -> X): Either<X, T> =
+        this?.let { Either.right(this) }
+                ?: Left(left())
 
-inline fun <X, T> Option<T>.toEitherLeft(right: () -> X): Either<T, X> = if (isEmpty()) {
-    Right(right())
-} else {
-    Left(get())
-}
+inline fun <X, T> T?.toEitherLeft(right: () -> X): Either<T, X> =
+        this?.let { Either.left(this) }
+                ?: Right(right())

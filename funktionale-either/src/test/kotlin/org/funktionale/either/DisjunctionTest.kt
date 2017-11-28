@@ -1,5 +1,6 @@
 /*
- * Copyright 2013 - 2016 Mario Arias
+ * Original work Copyright 2013 - 2016 Mario Arias
+ * Modified work Copyright 2017 Petter Ljungqvist [Houston Inc.]
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +19,6 @@ package org.funktionale.either
 
 import org.funktionale.either.Disjunction.Left
 import org.funktionale.either.Disjunction.Right
-import org.funktionale.option.Option
 import org.testng.Assert.*
 import org.testng.annotations.Test
 
@@ -82,10 +82,10 @@ class DisjunctionTest {
     }
 
     @Test fun filter() {
-        assertEquals(left.swap().filter { it == 5 }.get().get(), 5)
-        assertEquals(left.swap().filter { it == 6 }, Option.None)
-        assertEquals(right.filter { it.startsWith('k') }.get().get(), "kotlin")
-        assertEquals(right.filter { it.startsWith('j') }, Option.None)
+        assertEquals(left.swap().filter { it == 5 }?.get(), 5)
+        assertNull(left.swap().filter { it == 6 })
+        assertEquals(right.filter { it.startsWith('k') }?.get(), "kotlin")
+        assertNull(right.filter { it.startsWith('j') })
     }
 
     @Test fun toList() {
@@ -94,8 +94,8 @@ class DisjunctionTest {
     }
 
     @Test fun toOption() {
-        assertEquals(left.swap().toOption().get(), 5)
-        assertEquals(left.toOption(), Option.None)
+        assertEquals(left.swap().getOrNull(), 5)
+        assertNull(left.getOrNull())
     }
 
     @Test fun fold() {
